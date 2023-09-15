@@ -5,13 +5,14 @@ import java.sql.Statement;
 
 public class Main {
 
-    public static void topEconomicalBowlersIn2015() throws Exception{
+    public static void topTenEconomicalBowlersIn2015() throws Exception{
+        System.out.printf("%-20s %-20s%n", "Bowler", "Economy\n");
         Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Ishan2712#" );
-        String query = "SELECT bowler, ROUND((SUM(total_runs - bye_runs - legbye_runs) / (COUNT(CASE WHEN (wide_runs = 0 AND noball_runs =0) THEN 1 ELSE null END) / 6.0)),2) AS economy_rate FROM deliveries INNER JOIN matches ON deliveries.match_id = matches.id WHERE season = '2015' GROUP BY bowler ORDER BY economy_rate ASC";
+        String query = "select bowler, round((sum(total_runs - bye_runs - legbye_runs) / (count(case when (wide_runs = 0 and noball_runs =0) then 1 else 0 END) / 6.0)),2) as economy from matches inner join deliveries on matches.id = deliveries.match_id where season = '2015' group by bowler order by economy limit 10";
         Statement state = con.createStatement();
         ResultSet result = state.executeQuery(query);
         while(result.next()) {
-            System.out.println("Bowler: " + result.getString("bowler") + ", Economy rate: " + result.getInt("economy_rate"));
+            System.out.printf("%-20s %-10.2f%n" , result.getString("Bowler") , result.getDouble("Economy"));
         }
         System.out.println();
         System.out.println();
@@ -20,12 +21,13 @@ public class Main {
     }
 
     public static void extraRunsConcededPerTeamIn2016() throws Exception{
+        System.out.printf("%-30s %-20s%n","Team","Extra Runs Conceded\n");
         Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Ishan2712#" );
-        String query = "SELECT bowling_team, SUM(extra_runs) AS extra_runs FROM deliveries INNER JOIN matches ON deliveries.match_id = matches.id WHERE season = '2016' GROUP BY bowling_team ORDER BY extra_runs ASC";
+        String query = "select bowling_team, sum(extra_runs) as extra_runs from matches inner join deliveries on matches.id = deliveries.match_id where season = '2016' group by bowling_team order by extra_runs desc";
         Statement state = con.createStatement();
         ResultSet result = state.executeQuery(query);
         while(result.next()) {
-            System.out.println("Team: " + result.getString("bowling_team") + ", Extra runs conceded: " + result.getInt("extra_runs"));
+            System.out.printf("%-30s %-20d%n",result.getString("bowling_team"),result.getInt("extra_runs"));
         }
         System.out.println();
         System.out.println();
@@ -34,12 +36,13 @@ public class Main {
     }
 
     public static void numberOfMatchesWonByAllTeams() throws Exception{
+        System.out.printf("%-30s %-20s%n","Team","Matches Won\n");
         Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Ishan2712#" );
-        String query = "SELECT winner, count(*) AS count FROM matches WHERE winner IS NOT null GROUP BY winner";
+        String query = "select winner, count(*) as wins from matches where winner is not null group by winner order by wins desc";
         Statement state = con.createStatement();
         ResultSet result = state.executeQuery(query);
         while(result.next()) {
-            System.out.println("Team: " + result.getString("winner") + ", No of matches won:  " + result.getInt("count"));
+            System.out.printf("%-30s %-20d%n",result.getString("winner"),result.getInt("wins"));
         }
         System.out.println();
         System.out.println();
@@ -48,12 +51,13 @@ public class Main {
     }
 
     public static void findNumberOfMatchesPlayedPerYear() throws Exception{
+        System.out.printf("%-10s %-20s%n","Year","Matches Played\n");
         Connection con = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "Ishan2712#" );
-        String query = "SELECT season, count(*) AS count FROM matches GROUP BY season ORDER BY season ASC";
+        String query = "select season, count(*) as matches_played from matches group by season order by season";
         Statement state = con.createStatement();
         ResultSet result = state.executeQuery(query);
         while(result.next()) {
-            System.out.println("Year: " + result.getString("season") + ", No of matches played: " + result.getInt("count"));
+            System.out.printf("%-10s %-20d%n",result.getString("season"),result.getInt("matches_played"));
         }
         System.out.println();
         System.out.println();
@@ -65,6 +69,6 @@ public class Main {
         findNumberOfMatchesPlayedPerYear();
         numberOfMatchesWonByAllTeams();
         extraRunsConcededPerTeamIn2016();
-        topEconomicalBowlersIn2015();
+        topTenEconomicalBowlersIn2015();
     }
 }
